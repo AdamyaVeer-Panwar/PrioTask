@@ -4,22 +4,28 @@
 
 void initQueue(Queue *queue)
 {
+    if (queue == NULL) {
+        return;
+    }
+
     queue->front = NULL;
     queue->rear = NULL;
 }
 
 int isQueueEmpty(const Queue *queue)
 {
-    return queue->front == NULL;
+    return queue == NULL || queue->front == NULL;
 }
 
-void enqueue(Queue *queue, int taskId)
+int enqueue(Queue *queue, int taskId)
 {
-    QueueNode *newNode = malloc(sizeof(QueueNode));
+    if (queue == NULL) {
+        return 0;
+    }
 
+    QueueNode *newNode = malloc(sizeof *newNode);
     if (newNode == NULL) {
-        printf("Memory allocation failed.\n");
-        return;
+        return 0;
     }
 
     newNode->taskId = taskId;
@@ -28,40 +34,40 @@ void enqueue(Queue *queue, int taskId)
     if (queue->rear == NULL) {
         queue->front = newNode;
         queue->rear = newNode;
-        return;
+    } else {
+        queue->rear->next = newNode;
+        queue->rear = newNode;
     }
 
-    queue->rear->next = newNode;
-    queue->rear = newNode;
+    return 1;
 }
 
-int dequeue(Queue *queue)
+int dequeue(Queue *queue, int *taskId)
 {
-    if (isQueueEmpty(queue)) {
-        return -1;
+    if (queue == NULL || taskId == NULL || queue->front == NULL) {
+        return 0;
     }
 
-    QueueNode *temp = queue->front;
-    int taskId = temp->taskId;
-
-    queue->front = queue->front->next;
+    QueueNode *node = queue->front;
+    *taskId = node->taskId;
+    queue->front = node->next;
 
     if (queue->front == NULL) {
         queue->rear = NULL;
     }
 
-    free(temp);
-
-    return taskId;
+    free(node);
+    return 1;
 }
 
-int peekQueue(const Queue *queue)
+int peekQueue(const Queue *queue, int *taskId)
 {
-    if (isQueueEmpty(queue)) {
-        return -1;
+    if (queue == NULL || taskId == NULL || queue->front == NULL) {
+        return 0;
     }
 
-    return queue->front->taskId;
+    *taskId = queue->front->taskId;
+    return 1;
 }
 
 void displayQueue(const Queue *queue)
@@ -72,14 +78,11 @@ void displayQueue(const Queue *queue)
     }
 
     const QueueNode *current = queue->front;
-
     while (current != NULL) {
         printf("%d", current->taskId);
-
         if (current->next != NULL) {
             printf(" -> ");
         }
-
         current = current->next;
     }
 
@@ -88,7 +91,17 @@ void displayQueue(const Queue *queue)
 
 void freeQueue(Queue *queue)
 {
-    while (!isQueueEmpty(queue)) {
-        dequeue(queue);
+    if (queue == NULL) {
+        return;
     }
+
+    QueueNode *current = queue->front;
+    while (current != NULL) {
+        QueueNode *next = current->next;
+        free(current);
+        current = next;
+    }
+
+    queue->front = NULL;
+    queue->rear = NULL;
 }

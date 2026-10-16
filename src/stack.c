@@ -4,52 +4,56 @@
 
 void initStack(Stack *stack)
 {
+    if (stack == NULL) {
+        return;
+    }
+
     stack->top = NULL;
 }
 
 int isStackEmpty(const Stack *stack)
 {
-    return stack->top == NULL;
+    return stack == NULL || stack->top == NULL;
 }
 
-void push(Stack *stack, int taskId)
+int push(Stack *stack, int taskId)
 {
-    StackNode *newNode = malloc(sizeof(StackNode));
+    if (stack == NULL) {
+        return 0;
+    }
 
+    StackNode *newNode = malloc(sizeof *newNode);
     if (newNode == NULL) {
-        printf("Memory allocation failed.\n");
-        return;
+        return 0;
     }
 
     newNode->taskId = taskId;
     newNode->next = stack->top;
-
     stack->top = newNode;
+    return 1;
 }
 
-int pop(Stack *stack)
+int pop(Stack *stack, int *taskId)
 {
-    if (isStackEmpty(stack)) {
-        return -1;
+    if (stack == NULL || taskId == NULL || stack->top == NULL) {
+        return 0;
     }
 
-    StackNode *temp = stack->top;
-    int taskId = temp->taskId;
-
-    stack->top = stack->top->next;
-
-    free(temp);
-
-    return taskId;
+    StackNode *node = stack->top;
+    *taskId = node->taskId;
+    stack->top = node->next;
+    free(node);
+    return 1;
 }
 
-int peekStack(const Stack *stack)
+int peekStack(const Stack *stack, int *taskId)
 {
-    if (isStackEmpty(stack)) {
-        return -1;
+    if (stack == NULL || taskId == NULL || stack->top == NULL) {
+        return 0;
     }
 
-    return stack->top->taskId;
+    *taskId = stack->top->taskId;
+    return 1;
 }
 
 void displayStack(const Stack *stack)
@@ -59,26 +63,28 @@ void displayStack(const Stack *stack)
         return;
     }
 
-    const StackNode *current = stack->top;
-
     printf("TOP -> ");
-
-    while (current != NULL) {
+    for (const StackNode *current = stack->top; current != NULL; current = current->next) {
         printf("%d", current->taskId);
-
         if (current->next != NULL) {
             printf(" -> ");
         }
-
-        current = current->next;
     }
-
     printf("\n");
 }
 
 void freeStack(Stack *stack)
 {
-    while (!isStackEmpty(stack)) {
-        pop(stack);
+    if (stack == NULL) {
+        return;
     }
+
+    StackNode *current = stack->top;
+    while (current != NULL) {
+        StackNode *next = current->next;
+        free(current);
+        current = next;
+    }
+
+    stack->top = NULL;
 }

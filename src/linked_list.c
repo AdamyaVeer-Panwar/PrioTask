@@ -4,45 +4,51 @@
 
 void initLinkedList(LinkedList *list)
 {
-    list->head = NULL;
-}
-
-void insertTask(LinkedList *list, Task task)
-{
-    TaskNode *newNode = malloc(sizeof(TaskNode));
-
-    if (newNode == NULL) {
-        printf("Memory allocation failed.\n");
+    if (list == NULL) {
         return;
     }
 
-    newNode->task = task;
+    list->head = NULL;
+}
+
+int insertTask(LinkedList *list, const Task *task)
+{
+    if (list == NULL || task == NULL) {
+        return 0;
+    }
+
+    TaskNode *newNode = malloc(sizeof *newNode);
+    if (newNode == NULL) {
+        return 0;
+    }
+
+    /* Task is stored by value; the list owns only this node allocation. */
+    newNode->task = *task;
     newNode->next = NULL;
 
     if (list->head == NULL) {
         list->head = newNode;
-        return;
+        return 1;
     }
 
     TaskNode *current = list->head;
-
     while (current->next != NULL) {
         current = current->next;
     }
-
     current->next = newNode;
+    return 1;
 }
 
 Task *searchTask(LinkedList *list, int taskId)
 {
-    TaskNode *current = list->head;
+    if (list == NULL) {
+        return NULL;
+    }
 
-    while (current != NULL) {
+    for (TaskNode *current = list->head; current != NULL; current = current->next) {
         if (current->task.id == taskId) {
             return &current->task;
         }
-
-        current = current->next;
     }
 
     return NULL;
@@ -50,17 +56,14 @@ Task *searchTask(LinkedList *list, int taskId)
 
 int deleteTask(LinkedList *list, int taskId)
 {
-    if (list->head == NULL) {
+    if (list == NULL) {
         return 0;
     }
 
-    TaskNode *current = list->head;
     TaskNode *previous = NULL;
-
+    TaskNode *current = list->head;
     while (current != NULL) {
-
         if (current->task.id == taskId) {
-
             if (previous == NULL) {
                 list->head = current->next;
             } else {
@@ -78,38 +81,25 @@ int deleteTask(LinkedList *list, int taskId)
     return 0;
 }
 
-int updateTask(LinkedList *list, int taskId)
+int updateTask(LinkedList *list, int taskId, const Task *updatedTask)
 {
     Task *task = searchTask(list, taskId);
-
-    if (task == NULL) {
+    if (task == NULL || updatedTask == NULL || updatedTask->id != taskId) {
         return 0;
     }
 
-    printf("Enter new task name: ");
-    scanf(" %99[^\n]", task->name);
-
-    printf("Enter new subject: ");
-    scanf(" %49[^\n]", task->subject);
-
-    printf("Enter new priority (1-5): ");
-    scanf("%d", &task->priority);
-
-    printf("Enter new deadline: ");
-    scanf(" %19[^\n]", task->deadline);
-
+    *task = *updatedTask;
     return 1;
 }
+
 void displayTasks(const LinkedList *list)
 {
-    if (list->head == NULL) {
+    if (list == NULL || list->head == NULL) {
         printf("No tasks available.\n");
         return;
     }
 
-    const TaskNode *current = list->head;
-
-    while (current != NULL) {
+    for (const TaskNode *current = list->head; current != NULL; current = current->next) {
         printf(
             "ID: %d | Name: %s | Subject: %s | Priority: %d | Deadline: %s | Status: %s\n",
             current->task.id,
@@ -119,15 +109,16 @@ void displayTasks(const LinkedList *list)
             current->task.deadline,
             statusToString(current->task.status)
         );
-
-        current = current->next;
     }
 }
 
 void freeLinkedList(LinkedList *list)
 {
-    TaskNode *current = list->head;
+    if (list == NULL) {
+        return;
+    }
 
+    TaskNode *current = list->head;
     while (current != NULL) {
         TaskNode *next = current->next;
         free(current);

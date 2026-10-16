@@ -1,3 +1,4 @@
+/* stack.h */
 #ifndef STACK_H
 #define STACK_H
 
@@ -11,15 +12,11 @@ typedef struct {
 } Stack;
 
 void initStack(Stack *stack);
-
 int isStackEmpty(const Stack *stack);
-
-void push(Stack *stack, int taskId);
-int pop(Stack *stack);
-int peekStack(const Stack *stack);
-
+int push(Stack *stack, int taskId);
+int pop(Stack *stack, int *taskId);
+int peekStack(const Stack *stack, int *taskId);
 void displayStack(const Stack *stack);
-
 void freeStack(Stack *stack);
 
 #endif

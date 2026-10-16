@@ -1,3 +1,4 @@
+/* linked_list.h */
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
@@ -13,13 +14,11 @@ typedef struct {
 } LinkedList;
 
 void initLinkedList(LinkedList *list);
-
-void insertTask(LinkedList *list, Task task);
-int deleteTask(LinkedList *list, int taskId);
+int insertTask(LinkedList *list, const Task *task);
 Task *searchTask(LinkedList *list, int taskId);
-int updateTask(LinkedList *list, int taskId);
+int deleteTask(LinkedList *list, int taskId);
+int updateTask(LinkedList *list, int taskId, const Task *updatedTask);
 void displayTasks(const LinkedList *list);
-
 void freeLinkedList(LinkedList *list);
 
 #endif

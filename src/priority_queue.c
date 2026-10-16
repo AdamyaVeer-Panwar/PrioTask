@@ -4,77 +4,71 @@
 
 void initPriorityQueue(PriorityQueue *pq)
 {
+    if (pq == NULL) {
+        return;
+    }
+
     pq->front = NULL;
 }
 
 int isPriorityQueueEmpty(const PriorityQueue *pq)
 {
-    return pq->front == NULL;
+    return pq == NULL || pq->front == NULL;
 }
 
-void insertPriorityTask(
-    PriorityQueue *pq,
-    int taskId,
-    int priority
-)
+int insertPriorityTask(PriorityQueue *pq, int taskId, int priority)
 {
-    PriorityNode *newNode = malloc(sizeof(PriorityNode));
+    if (pq == NULL) {
+        return 0;
+    }
 
+    PriorityNode *newNode = malloc(sizeof *newNode);
     if (newNode == NULL) {
-        printf("Memory allocation failed.\n");
-        return;
+        return 0;
     }
 
     newNode->taskId = taskId;
     newNode->priority = priority;
     newNode->next = NULL;
 
-    if (pq->front == NULL ||
-        priority > pq->front->priority) {
-
+    if (pq->front == NULL || priority > pq->front->priority) {
         newNode->next = pq->front;
         pq->front = newNode;
-        return;
+        return 1;
     }
 
     PriorityNode *current = pq->front;
-
-    /*
-     * Equal priorities remain in insertion order.
-     */
-    while (current->next != NULL &&
-           current->next->priority >= priority) {
-
+    /* Keep equal-priority tasks in their insertion order. */
+    while (current->next != NULL && current->next->priority >= priority) {
         current = current->next;
     }
 
     newNode->next = current->next;
     current->next = newNode;
+    return 1;
 }
 
-int removeHighestPriority(PriorityQueue *pq)
+int removeHighestPriority(PriorityQueue *pq, int *taskId)
 {
-    if (isPriorityQueueEmpty(pq)) {
-        return -1;
+    if (pq == NULL || taskId == NULL || pq->front == NULL) {
+        return 0;
     }
 
-    PriorityNode *temp = pq->front;
-    int taskId = temp->taskId;
-
-    pq->front = pq->front->next;
-
-    free(temp);
-
-    return taskId;
+    PriorityNode *node = pq->front;
+    *taskId = node->taskId;
+    pq->front = node->next;
+    free(node);
+    return 1;
 }
 
-int peekHighestPriority(const PriorityQueue *pq)
+int peekHighestPriority(const PriorityQueue *pq, int *taskId)
 {
-    if (isPriorityQueueEmpty(pq)) {
-        return -1;
+    if (pq == NULL || taskId == NULL || pq->front == NULL) {
+        return 0;
     }
 
-    return pq->front->taskId;
+    *taskId = pq->front->taskId;
+    return 1;
 }
 
 void displayPriorityQueue(const PriorityQueue *pq)
@@ -85,28 +79,28 @@ void displayPriorityQueue(const PriorityQueue *pq)
     }
 
     const PriorityNode *current = pq->front;
-
     while (current != NULL) {
-
-        printf(
-            "%d(P%d)",
-            current->taskId,
-            current->priority
-        );
-
+        printf("%d(P%d)", current->taskId, current->priority);
         if (current->next != NULL) {
             printf(" -> ");
         }
-
         current = current->next;
     }
-
     printf("\n");
 }
 
 void freePriorityQueue(PriorityQueue *pq)
 {
-    while (!isPriorityQueueEmpty(pq)) {
-        removeHighestPriority(pq);
+    if (pq == NULL) {
+        return;
     }
+
+    PriorityNode *current = pq->front;
+    while (current != NULL) {
+        PriorityNode *next = current->next;
+        free(current);
+        current = next;
+    }
+
+    pq->front = NULL;
 }
